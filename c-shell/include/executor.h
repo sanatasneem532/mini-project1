@@ -55,5 +55,7 @@ int wait_foreground(pid_t pgid, const pid_t *pids, int count, int *out_stopped);
 
 void free_pipeline(Pipeline *pipeline);
 
+char *resolve_command_path(const char *raw_name);
+
 #endif
 

@@ -231,7 +231,7 @@ int prepare_pipeline_redirections(Pipeline *pipeline) {
     return 0;
 }
 
-static char *resolve_command_path(const char *raw_name) {
+char *resolve_command_path(const char *raw_name) {
     int skip_cwd = 0;
     const char *name = raw_name;
     if (name[0] == '%') {

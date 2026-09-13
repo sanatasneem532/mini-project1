@@ -173,7 +173,6 @@ int main(void) {
             }
 
             if (!seg->background &&
-                cmdline.segment_count == 1 &&
                 seg->pipeline.stage_count == 1 &&
                 seg->pipeline.stages[0].input_count == 0 &&
                 seg->pipeline.stages[0].output_count == 0) {

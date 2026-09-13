@@ -8,6 +8,8 @@
 #include "activities.h"
 #include "resume.h"
 #include "ping.h"
+#include "spy.h"
+#include "snoop.h"
 
 int dispatch_builtin(ShellState *state, int argc, char **argv, pid_t shell_pgid) {
     if (argc == 0) {
@@ -40,6 +42,14 @@ int dispatch_builtin(ShellState *state, int argc, char **argv, pid_t shell_pgid)
     }
     if (strcmp(argv[0], "ping") == 0) {
         cmd_ping(argc - 1, argv + 1);
+        return 1;
+    }
+    if (strcmp(argv[0], "spy") == 0) {
+        cmd_spy(argc - 1, argv + 1);
+        return 1;
+    }
+    if (strcmp(argv[0], "snoop") == 0) {
+        cmd_snoop(argc - 1, argv + 1);
         return 1;
     }
 
