@@ -55,5 +55,5 @@ void print_prompt(const ShellState *state) {
         snprintf(display, sizeof(display), "%s", cwd);
     }
 
-    printf("<%s@%s:%s> ", state->username, state->hostname, display);
+    printf("<%s@%s:%s>\n", state->username, state->hostname, display);
 }

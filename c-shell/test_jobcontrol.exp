@@ -1,0 +1,69 @@
+#!/usr/bin/env expect
+###############################################################################
+# test_jobcontrol.exp — tests Part E (terminal control) which needs a real
+# pseudo-terminal, because Ctrl-C/Ctrl-Z are SIGNALS the tty driver generates,
+# not literal bytes a shell can see on a plain pipe.
+#
+# Install expect first:
+#   sudo apt install expect        (Debian/Ubuntu, incl. WSL)
+#
+# Usage:
+#   ./test_jobcontrol.exp ./shell.out
+###############################################################################
+set timeout 5
+set shell_bin [lindex $argv 0]
+if {$shell_bin == ""} { set shell_bin "./shell.out" }
+
+spawn $shell_bin
+
+# --- Ctrl-C should not kill the shell ---
+expect -re {<.*>}
+send "sleep 100\r"
+after 500
+send "\x03"
+expect {
+    -re {<.*>} { puts "\n\[PASS\] Ctrl-C: shell survived and reprinted prompt" }
+    timeout    { puts "\n\[FAIL\] Ctrl-C: shell did not return to prompt" }
+    eof        { puts "\n\[FAIL\] Ctrl-C: shell exited (it should NOT die on SIGINT)" }
+}
+
+# --- Ctrl-Z should stop the job, not kill the shell ---
+send "sleep 100\r"
+after 500
+send "\x1a"
+expect {
+    -re {Stopped} { puts "\[PASS\] Ctrl-Z: job reported Stopped" }
+    timeout       { puts "\[FAIL\] Ctrl-Z: no 'Stopped' message seen" }
+    eof           { puts "\[FAIL\] Ctrl-Z: shell exited (it should NOT die on SIGTSTP)" }
+}
+
+# --- activities should show the stopped job ---
+send "activities\r"
+expect {
+    -re {Stopped} { puts "\[PASS\] activities: shows the stopped job" }
+    timeout       { puts "\[FAIL\] activities: stopped job not listed" }
+}
+
+# --- resume %1 bg ---
+send "resume %1 bg\r"
+expect {
+    -re {Running} { puts "\[PASS\] resume bg: job marked Running" }
+    timeout       { puts "\[FAIL\] resume bg: no Running message" }
+}
+
+# --- Ctrl-D with a clean state should exit; with stopped jobs it should warn ---
+send "sleep 100\r"
+after 500
+send "\x1a"
+expect -re {Stopped}
+send "\x04"
+expect {
+    -re {stopped jobs} { puts "\[PASS\] Ctrl-D blocked: 'there are stopped jobs' shown" }
+    timeout             { puts "\[FAIL\] Ctrl-D: no warning about stopped jobs" }
+    eof                 { puts "\[FAIL\] Ctrl-D: shell exited despite a stopped job" }
+}
+send "\x04"
+expect {
+    eof     { puts "\[PASS\] Second Ctrl-D: shell exited" }
+    timeout { puts "\[FAIL\] Second Ctrl-D: shell did not exit" }
+}
