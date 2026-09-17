@@ -7,9 +7,9 @@
 void
 cpu_bound(void)
 {
-  volatile double x = 0;
-  for (int i = 0; i < 50000000; i++) {
-    x += 0.001 * i;
+  volatile unsigned int x = 0;
+  for (unsigned int i = 0; i < 50000000; i++) {
+    x += i;
   }
   (void)x;
 }
@@ -44,9 +44,7 @@ int
 main(void)
 {
   int pids[NPROCS];
-  int types[NPROCS]; // 0: CPU, 1: IO, 2: Mixed
-  int rtimes[NPROCS];
-  int wtimes[NPROCS];
+  int types[NPROCS];// 0: CPU, 1: IO, 2: Mixed
 
   printf("=== Starting schedulertest (%d processes) ===\n", NPROCS);
 
@@ -81,15 +79,22 @@ main(void)
   for (int i = 0; i < NPROCS; i++) {
     int rtime = 0, wtime = 0;
     int pid = waitx(&rtime, &wtime);
-    rtimes[i] = rtime;
-    wtimes[i] = wtime;
     int turnaround = rtime + wtime;
 
     total_rtime += rtime;
     total_wtime += wtime;
     total_ttime += turnaround;
 
-    const char *typestr = (types[i] == 0) ? "CPU-Bound" : (types[i] == 1) ? "IO-Bound " : "Mixed    ";
+    int type = -1;
+
+for (int j = 0; j < NPROCS; j++) {
+  if (pids[j] == pid) {
+    type = types[j];
+    break;
+  }
+}
+
+const char *typestr = (type == 0) ? "CPU-Bound" : (type == 1) ? "IO-Bound " : "Mixed    ";
     printf("%d\t%s\t%d\t%d\t%d\n", pid, typestr, rtime, wtime, turnaround);
   }
 

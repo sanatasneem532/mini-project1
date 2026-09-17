@@ -139,8 +139,8 @@ found:
   if (p->pagetable == 0) {
     freeproc(p);
     release(&p->lock);
-    return 0;
-  }
+  return 0;
+}
 
   // Set up new context to start executing at forkret,
   // which returns to user space.
@@ -148,15 +148,15 @@ found:
   p->context.ra = (uint64)forkret;
   p->context.sp = p->kstack + PGSIZE;
 
-  p->prio = 0;
-  p->slicetk = 0;
-  p->etime = ticks;
-  for (int i = 0; i < 4; i++)
-    p->qt[i] = 0;
+  p->priority = 0;
+  p->ticks_in_slice = 0;
+  p->enter_time = ticks;
+  for(int i = 0; i < 4; i++)
+    p->q_ticks[i] = 0;
   p->ctime = ticks;
-  p->stime = -1;
-  p->rtime = 0;
-  p->wtime = 0;
+  p->start_time = -1;
+  p->run_time = 0;
+  p->wait_time = 0;
   p->otime = 0;
 
   return p;
@@ -180,15 +180,15 @@ freeproc(struct proc *p)
   p->chan = 0;
   p->killed = 0;
   p->xstate = 0;
-  p->prio = 0;
-  p->slicetk = 0;
-  p->etime = 0;
-  for (int i = 0; i < 4; i++)
-    p->qt[i] = 0;
+  p->priority = 0;
+  p->ticks_in_slice = 0;
+  p->enter_time = 0;
+  for(int i = 0; i < 4; i++)
+    p->q_ticks[i] = 0;
   p->ctime = 0;
-  p->stime = 0;
-  p->rtime = 0;
-  p->wtime = 0;
+  p->start_time = 0;
+  p->run_time = 0;
+  p->wait_time = 0;
   p->otime = 0;
   p->state = UNUSED;
 }
@@ -460,8 +460,8 @@ kwaitx(uint64 r, uint64 w)
         hk = 1;
         if (pp->state == ZOMBIE) {
           pid = pp->pid;
-          int rt = pp->rtime;
-          int wt = pp->wtime;
+          int rt = pp->run_time;
+          int wt = pp->wait_time;
           if (r != 0 && copyout(p->pagetable, p->sz, r, (char *)&rt, sizeof(rt)) < 0) {
             release(&pp->lock);
             release(&wait_lock);

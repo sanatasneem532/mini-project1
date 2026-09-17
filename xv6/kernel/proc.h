@@ -102,13 +102,13 @@ struct proc {
   struct inode *cwd;           // Current directory
   char name[16];               // Process name (debugging)
 
-  int prio;
-  int slicetk;
-  int etime;
-  int qt[4];
+  int priority;
+  int ticks_in_slice;
+  int enter_time;
+  int q_ticks[4];
   int ctime;
-  int stime;
-  int rtime;
-  int wtime;
+  int start_time;
+  int run_time;
+  int wait_time;
   int otime;
 };

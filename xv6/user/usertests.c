@@ -828,6 +828,7 @@ killstatus(char *s)
 void
 preempt(char *s)
 {
+  int master_pid = getpid();
   int pid1, pid2, pid3;
   int pfds[2];
 
@@ -842,7 +843,7 @@ preempt(char *s)
 
   pid2 = fork();
   if (pid2 < 0) {
-    printf("%s: fork failed\n", s);
+    kill(master_pid);
     exit(1);
   }
   if (pid2 == 0)
@@ -929,6 +930,7 @@ reparent(char *s)
     } else {
       int pid2 = fork();
       if (pid2 < 0) {
+         printf("reparent: second fork failed at iteration %d\n", i);
         kill(master_pid);
         exit(1);
       }
@@ -975,7 +977,7 @@ forkfork(char *s)
   for (int i = 0; i < N; i++) {
     int pid = fork();
     if (pid < 0) {
-      printf("%s: fork failed", s);
+      printf("%s: fork failed\n", s);
       exit(1);
     }
     if (pid == 0) {

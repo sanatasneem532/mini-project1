@@ -200,7 +200,7 @@ clockintr()
     wakeup(&ticks);
 #ifdef MLFQ
     if (ticks % 48 == 0)
-      do_boost = 1;
+    do_boost = 1;
 #endif
     release(&tickslock);
 
